@@ -227,7 +227,7 @@ const setupReminders = () => {
 // ============================================================
 const registerSW = async () => {
     if ('serviceWorker' in navigator) {
-        try { await navigator.serviceWorker.register('/sw.js'); }
+        try { await navigator.serviceWorker.register('./sw.js'); }
         catch (e) { console.warn('SW failed:', e); }
     }
 };

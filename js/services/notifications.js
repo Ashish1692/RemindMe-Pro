@@ -26,13 +26,13 @@ export const showNotification = (task, currentCount, totalCount) => {
             : `Reminder ${currentCount} of ${totalCount}${isLast ? ' — DUE NOW!' : ''}${task.description ? ': ' + task.description : ''}`;
         
         // 1. Play custom sound
-        const sound = new Audio('/assets/sounds/reminder.mp3');
+        const sound = new Audio('./assets/sounds/reminder.mp3');
         sound.volume = 1;
         sound.play().catch(() => { }); // catch if user hasn't interacted yet
         
         const n = new Notification(task.title, {
             body,
-            icon: '/assets/icons/icon-192.png',
+            icon: '/assets/icons/icons8-alarm-96.png',
             tag: `${task.id}-${currentCount}`,
             requireInteraction: true,
         });
