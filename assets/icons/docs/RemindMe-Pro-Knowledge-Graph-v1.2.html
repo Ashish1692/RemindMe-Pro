@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 RemindMe Pro — Knowledge Graph</title>
+<style>
+    :root { --bg: #0f172a; --surface: #1e293b; --surface2: #334155; --text: #e2e8f0; --muted: #94a3b8; --primary: #6C63FF; --pink: #D30E8C; --purple: #582873; --blue: #4F93D9; --green: #00C9A7; --orange: #FFB347; --red: #FF6584; --border: #475569; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+    /* Header */
+    .header { text-align: center; padding: 40px 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .header h1 { font-size: 36px; background: linear-gradient(135deg, var(--primary), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+    .header p { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+    .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .badge { padding: 5px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .b-purple { background: rgba(108,99,255,0.15); color: var(--primary); border: 1px solid rgba(108,99,255,0.3); }
+    .b-green { background: rgba(0,201,167,0.15); color: var(--green); border: 1px solid rgba(0,201,167,0.3); }
+    .b-orange { background: rgba(255,179,71,0.15); color: var(--orange); border: 1px solid rgba(255,179,71,0.3); }
+    .b-red { background: rgba(255,101,132,0.2); color: var(--red); border: 1px solid rgba(255,101,132,0.4); }
+
+    /* Changelog */
+    .changelog { background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(211,14,140,0.08)); border: 1px solid rgba(108,99,255,0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .changelog h3 { color: var(--primary); margin-bottom: 12px; font-size: 15px; }
+    .cl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+    .cl-item { background: var(--surface); border-radius: 8px; padding: 10px 14px; font-size: 13px; }
+    .cl-item strong { display: block; margin-bottom: 2px; }
+    .cl-files { font-size: 11px; color: var(--muted); font-family: monospace; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border-radius: 12px; padding: 4px; overflow-x: auto; }
+    .tab { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--muted); border: none; background: none; white-space: nowrap; transition: all 0.2s; }
+    .tab:hover { color: var(--text); background: var(--surface2); }
+    .tab.active { color: white; background: var(--primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Architecture */
+    .arch-box { background: var(--surface); border-radius: 16px; padding: 30px; overflow-x: auto; }
+
+    /* Section titles */
+    .stitle { font-size: 20px; font-weight: 700; margin: 28px 0 14px; display: flex; align-items: center; gap: 10px; }
+
+    /* Node cards */
+    .ngrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .ncard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: transform 0.2s, box-shadow 0.2s; }
+    .ncard:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+    .ncard.root { border-left: 4px solid var(--pink); }
+    .ncard.css { border-left: 4px solid var(--blue); }
+    .ncard.util { border-left: 4px solid var(--green); }
+    .ncard.svc { border-left: 4px solid var(--primary); }
+    .ncard.page { border-left: 4px solid var(--orange); }
+    .ncard.main { border-left: 4px solid var(--red); }
+    .ncard.upd { border-color: var(--red) !important; box-shadow: inset 0 0 0 1px rgba(255,101,132,0.12); }
+    .nname { font-size: 15px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .ntype { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .t-entry { background: rgba(211,14,140,0.15); color: var(--pink); }
+    .t-style { background: rgba(79,147,217,0.15); color: var(--blue); }
+    .t-util { background: rgba(0,201,167,0.15); color: var(--green); }
+    .t-svc { background: rgba(108,99,255,0.15); color: var(--primary); }
+    .t-page { background: rgba(255,179,71,0.15); color: var(--orange); }
+    .t-main { background: rgba(255,101,132,0.15); color: var(--red); }
+    .t-upd { background: rgba(255,101,132,0.2); color: var(--red); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+    .ndesc { font-size: 13px; color: var(--muted); margin: 8px 0; }
+    .nsize { font-size: 11px; color: var(--border); }
+
+    /* Function tables */
+    .ft { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .ft th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 5px 8px; border-bottom: 1px solid var(--border); }
+    .ft td { font-size: 12px; padding: 5px 8px; border-bottom: 1px solid rgba(71,85,105,0.3); vertical-align: top; }
+    .ft td:first-child { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--green); white-space: nowrap; font-size: 11px; }
+    .ft tr:last-child td { border-bottom: none; }
+    .ft tr.nr td { background: rgba(255,101,132,0.05); }
+    .ft tr.nr td:first-child { color: var(--red); }
+    .fn-u { color: var(--red); font-size: 10px; font-weight: 700; }
+
+    /* Dependency tree */
+    .dtree { background: var(--surface); border-radius: 12px; padding: 24px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.8; overflow-x: auto; white-space: pre; }
+    .df { color: var(--primary); font-weight: 700; }
+    .dm { color: var(--orange); }
+    .dfn { color: var(--green); }
+    .dn { color: var(--red); font-weight: 700; }
+
+    /* Flow cards */
+    .fcard { background: var(--surface); border-radius: 12px; padding: 22px; margin-bottom: 14px; }
+    .fcard h3 { font-size: 15px; margin-bottom: 10px; color: var(--primary); }
+    .fcard.nf { border: 1px solid rgba(255,101,132,0.3); }
+    .fcard.nf h3 { color: var(--red); }
+    .fcard.ff { border: 1px solid rgba(108,99,255,0.3); }
+    .fcard.ff h3 { color: var(--primary); }
+    .fcard pre { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; line-height: 1.7; color: var(--muted); overflow-x: auto; }
+
+    /* Tables */
+    .itable { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    .itable th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); padding: 10px 14px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .itable td { font-size: 12px; padding: 9px 14px; border-bottom: 1px solid rgba(71,85,105,0.3); }
+    .itable tr:last-child td { border-bottom: none; }
+    .itable tr.nr { background: rgba(255,101,132,0.05); }
+    .itable code { font-family: 'SF Mono', monospace; font-size: 11px; background: rgba(108,99,255,0.1); color: var(--primary); padding: 2px 6px; border-radius: 4px; }
+
+    /* Bars & stats */
+    .bar { height: 8px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+    .bh { background: var(--red); } .bm { background: var(--orange); } .bl { background: var(--green); }
+    .sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+    .scard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+    .snum { font-size: 32px; font-weight: 700; color: var(--primary); }
+    .slab { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    @media (max-width: 768px) { .ngrid { grid-template-columns: 1fr; } .header h1 { font-size: 28px; } .cl-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- HEADER -->
+<!-- ============================================================ -->
+<div class="header">
+    <h1>🧠 RemindMe Pro — Knowledge Graph</h1>
+    <p>Complete codebase map with every file, function, and data flow</p>
+    <div class="badges">
+        <span class="badge b-purple">22 Files</span>
+        <span class="badge b-green">~58 KB</span>
+        <span class="badge b-orange">Zero Dependencies</span>
+        <span class="badge b-red">v1.2 — 5 Updates</span>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CHANGELOG -->
+<!-- ============================================================ -->
+<div class="changelog">
+    <h3>📋 Changelog — 7 files changed across v1.1 &amp; v1.2</h3>
+    <div class="cl-grid">
+        <div class="cl-item"><strong>⏳ Countdown Timer</strong><div class="cl-files">home.js, components.css</div></div>
+        <div class="cl-item"><strong>✏️ Edit Task</strong><div class="cl-files">home.js, app.js</div></div>
+        <div class="cl-item"><strong>🔇 Disable Notifications</strong><div class="cl-files">settings.js, app.js</div></div>
+        <div class="cl-item"><strong>🌙 Dark Mode Default</strong><div class="cl-files">theme.js, index.html</div></div>
+        <div class="cl-item"><strong>🔔 Notification Timing Fix</strong><div class="cl-files">notifications.js</div></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABS (same 6 as original first version) -->
+<!-- ============================================================ -->
+<div class="tabs">
+    <button class="tab active" onclick="showTab('arch')">📐 Architecture</button>
+    <button class="tab" onclick="showTab('nodes')">🧩 All Nodes</button>
+    <button class="tab" onclick="showTab('deps')">🔗 Dependencies</button>
+    <button class="tab" onclick="showTab('flows')">🔄 Data Flows</button>
+    <button class="tab" onclick="showTab('storage')">🗄️ Storage &amp; Events</button>
+    <button class="tab" onclick="showTab('metrics')">📊 Metrics</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1: ARCHITECTURE (with SVG diagram like original) -->
+<!-- ============================================================ -->
+<div id="arch" class="tab-content active">
+    <div class="arch-box">
+        <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;margin:0 auto;display:block">
+            <defs>
+                <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6C63FF;stop-opacity:0.8"/><stop offset="100%" style="stop-color:#D30E8C;stop-opacity:0.8"/></linearGradient>
+            </defs>
+
+            <!-- Lines -->
+            <line x1="450" y1="70" x2="150" y2="170" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5"/>
+            <line x1="450" y1="70" x2="450" y2="170" stroke="#475569" stroke-width="2"/>
+            <line x1="450" y1="70" x2="750" y2="170" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5"/>
+            <line x1="450" y1="230" x2="200" y2="330" stroke="#6C63FF" stroke-width="1.5"/>
+            <line x1="450" y1="230" x2="450" y2="330" stroke="#6C63FF" stroke-width="1.5"/>
+            <line x1="450" y1="230" x2="700" y2="330" stroke="#6C63FF" stroke-width="1.5"/>
+            <line x1="450" y1="390" x2="450" y2="460" stroke="#475569" stroke-width="1" stroke-dasharray="3,3"/>
+
+            <!-- index.html -->
+            <rect x="330" y="20" width="240" height="55" rx="10" fill="url(#g1)"/>
+            <text x="450" y="42" text-anchor="middle" fill="white" font-size="14" font-weight="700">index.html</text>
+            <text x="450" y="60" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">App Shell + PWA Entry Point</text>
+
+            <!-- CSS -->
+            <rect x="60" y="150" width="180" height="85" rx="10" fill="#1e293b" stroke="#4F93D9" stroke-width="2"/>
+            <text x="150" y="175" text-anchor="middle" fill="#4F93D9" font-size="13" font-weight="700">🎨 CSS Layer (5)</text>
+            <text x="150" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">variables · base · layout</text>
+            <text x="150" y="210" text-anchor="middle" fill="#94a3b8" font-size="10">components · animations</text>
+            <text x="150" y="225" text-anchor="middle" fill="#4F93D9" font-size="9">Theme tokens + responsive</text>
+
+            <!-- app.js -->
+            <rect x="340" y="150" width="220" height="85" rx="10" fill="#1e293b" stroke="#FF6584" stroke-width="2"/>
+            <text x="450" y="175" text-anchor="middle" fill="#FF6584" font-size="13" font-weight="700">🚀 js/app.js</text>
+            <text x="450" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">Main Orchestrator</text>
+            <text x="450" y="210" text-anchor="middle" fill="#94a3b8" font-size="10">init · routing · form · SW</text>
+            <text x="450" y="225" text-anchor="middle" fill="#FF6584" font-size="9">Imports ALL modules</text>
+
+            <!-- sw.js -->
+            <rect x="660" y="150" width="180" height="85" rx="10" fill="#1e293b" stroke="#FF6584" stroke-width="2"/>
+            <text x="750" y="175" text-anchor="middle" fill="#FF6584" font-size="13" font-weight="700">⚙️ sw.js</text>
+            <text x="750" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">Service Worker</text>
+            <text x="750" y="210" text-anchor="middle" fill="#94a3b8" font-size="10">cache · push · actions</text>
+            <text x="750" y="225" text-anchor="middle" fill="#FF6584" font-size="9">Background thread</text>
+
+            <!-- Utils -->
+            <rect x="60" y="310" width="180" height="85" rx="10" fill="#1e293b" stroke="#00C9A7" stroke-width="2"/>
+            <text x="150" y="335" text-anchor="middle" fill="#00C9A7" font-size="13" font-weight="700">🔧 Utils (2)</text>
+            <text x="150" y="355" text-anchor="middle" fill="#94a3b8" font-size="10">state.js — Proxy store</text>
+            <text x="150" y="370" text-anchor="middle" fill="#94a3b8" font-size="10">helpers.js — formatDate,</text>
+            <text x="150" y="385" text-anchor="middle" fill="#94a3b8" font-size="10">showToast, generateId</text>
+
+            <!-- Services -->
+            <rect x="310" y="310" width="280" height="85" rx="10" fill="#1e293b" stroke="#6C63FF" stroke-width="2"/>
+            <text x="450" y="335" text-anchor="middle" fill="#6C63FF" font-size="13" font-weight="700">⚡ Services (4)</text>
+            <text x="450" y="355" text-anchor="middle" fill="#94a3b8" font-size="10">db.js — IndexedDB CRUD (5 exports)</text>
+            <text x="450" y="370" text-anchor="middle" fill="#94a3b8" font-size="10">notifications.js — Multi-fire engine (6)</text>
+            <text x="450" y="385" text-anchor="middle" fill="#94a3b8" font-size="10">theme.js (4) · backup.js (12)</text>
+
+            <!-- Pages -->
+            <rect x="660" y="310" width="180" height="85" rx="10" fill="#1e293b" stroke="#FFB347" stroke-width="2"/>
+            <text x="750" y="335" text-anchor="middle" fill="#FFB347" font-size="13" font-weight="700">📄 Pages (4)</text>
+            <text x="750" y="355" text-anchor="middle" fill="#94a3b8" font-size="10">home.js — Task list</text>
+            <text x="750" y="370" text-anchor="middle" fill="#94a3b8" font-size="10">categories · calendar</text>
+            <text x="750" y="385" text-anchor="middle" fill="#94a3b8" font-size="10">settings + backup UI</text>
+
+            <!-- Storage -->
+            <rect x="350" y="440" width="200" height="50" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="450" y="462" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">🗄️ IndexedDB + localStorage</text>
+            <text x="450" y="478" text-anchor="middle" fill="#475569" font-size="9">tasks · theme · backups · ack flags</text>
+
+            <!-- Labels -->
+            <text x="440" y="140" text-anchor="middle" fill="#94a3b8" font-size="9">loads</text>
+            <text x="310" y="280" text-anchor="middle" fill="#94a3b8" font-size="9">imports</text>
+            <text x="450" y="280" text-anchor="middle" fill="#94a3b8" font-size="9">imports</text>
+            <text x="590" y="280" text-anchor="middle" fill="#94a3b8" font-size="9">imports</text>
+        </svg>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: ALL NODES -->
+<!-- ============================================================ -->
+<div id="nodes" class="tab-content">
+
+<div class="stitle">🏠 Root Files</div>
+<div class="ngrid">
+    <div class="ncard root upd"><div class="nname">index.html <span class="ntype t-entry">Entry</span> <span class="t-upd">🌙 UPD</span></div>
+        <div class="ndesc">App shell: header, &lt;main&gt;, bottom nav (4 tabs), FAB, task dialog (create+edit), confirm dialog, toast. v1.1: data-theme="dark", theme-color #1A1A2E.</div>
+        <div class="nsize">4.7 KB · #app, #app-content, #bottom-nav, #fab, #task-dialog, #confirm-dialog, #toast</div></div>
+    <div class="ncard root"><div class="nname">manifest.json <span class="ntype t-style">Config</span></div>
+        <div class="ndesc">PWA manifest: app name, theme color, standalone display, portrait, icon refs.</div><div class="nsize">0.4 KB</div></div>
+    <div class="ncard root"><div class="nname">sw.js <span class="ntype t-main">Worker</span></div>
+        <div class="ndesc">Service Worker: cache assets (cache-first), handle push notifications with Done/Snooze actions, post messages to app.</div>
+        <div class="nsize">1.3 KB · Events: install, activate, fetch, push, notificationclick</div></div>
+</div>
+
+<div class="stitle">🎨 CSS Layer</div>
+<div class="ngrid">
+    <div class="ncard css"><div class="nname">variables.css <span class="ntype t-style">Tokens</span></div>
+        <div class="ndesc">CSS Custom Properties for both themes. --primary, --bg, --surface, --text, --priority-*, --shadow-*, --space-*, --radius-*, --transition-*, --font-family, --primary-light.</div><div class="nsize">1.2 KB</div></div>
+    <div class="ncard css"><div class="nname">base.css <span class="ntype t-style">Reset</span></div>
+        <div class="ndesc">Box model reset, body defaults, heading sizes, input focus styles, range/checkbox accent.</div><div class="nsize">1.1 KB</div></div>
+    <div class="ncard css"><div class="nname">layout.css <span class="ntype t-style">Structure</span></div>
+        <div class="ndesc">Flexbox app shell (480px max), sticky header, scrollable content, fixed bottom nav, responsive breakpoints.</div><div class="nsize">1.0 KB</div></div>
+    <div class="ncard css upd"><div class="nname">components.css <span class="ntype t-style">UI</span> <span class="t-upd">⏳ UPD</span></div>
+        <div class="ndesc">All component styles. New: .task-card-header, .countdown-badge, .countdown-urgent (red+pulse), .countdown-overdue, .toggle-danger, .edit-btn.</div>
+        <table class="ft"><tr><th>New Class</th><th>Description</th></tr>
+            <tr class="nr"><td>.task-card-header</td><td>Flex row: title left, countdown right</td></tr>
+            <tr class="nr"><td>.countdown-badge</td><td>Monospace timer, purple bg, 100px min</td></tr>
+            <tr class="nr"><td>.countdown-urgent</td><td>Red + pulse when ≤5 min</td></tr>
+            <tr class="nr"><td>.countdown-overdue</td><td>Red bg when past due</td></tr>
+            <tr class="nr"><td>.toggle-danger</td><td>Red slider for disable notif toggle</td></tr>
+            <tr class="nr"><td>.edit-btn</td><td>Purple edit button</td></tr>
+        </table><div class="nsize">7.8 KB (was 6.6)</div></div>
+    <div class="ncard css"><div class="nname">animations.css <span class="ntype t-style">Motion</span></div>
+        <div class="ndesc">fadeIn, slideUp, checkmark, swipeOut, pulse (also used by countdown-urgent), stagger delays.</div><div class="nsize">0.8 KB</div></div>
+</div>
+
+<div class="stitle">⚙️ JS Utilities (unchanged)</div>
+<div class="ngrid">
+    <div class="ncard util"><div class="nname">state.js <span class="ntype t-util">Store</span></div>
+        <div class="ndesc">Proxy-based reactive state (~10 lines). Replaces Redux/Vuex.</div>
+        <table class="ft"><tr><th>Export</th><th>Description</th></tr>
+            <tr><td>createStore(init)</td><td>Wraps object in Proxy; notifies listeners on set</td></tr>
+            <tr><td>store</td><td>Singleton: tasks[], categories[], currentPage, theme, isOnline</td></tr>
+        </table><div class="nsize">0.5 KB</div></div>
+    <div class="ncard util"><div class="nname">helpers.js <span class="ntype t-util">Utils</span></div>
+        <div class="ndesc">7 pure functions — no dependencies, no side effects.</div>
+        <table class="ft"><tr><th>Export</th><th>Description</th></tr>
+            <tr><td>generateId()</td><td>UUID via crypto.randomUUID() with fallback</td></tr>
+            <tr><td>formatDate(d)</td><td>Full: "Mon, 30 May, 03:00 pm"</td></tr>
+            <tr><td>formatDateShort(d)</td><td>Short: "30 May, 03:00 pm"</td></tr>
+            <tr><td>getDateLabel(d)</td><td>"Overdue" / "Today" / "Tomorrow" / "This Week" / "Upcoming"</td></tr>
+            <tr><td>showToast(msg, ms)</td><td>Show/hide #toast with auto-dismiss</td></tr>
+            <tr><td>getCategoryIcon(c)</td><td>work→💼, health→💊, study→📚, finance→💰</td></tr>
+            <tr><td>getPriorityLabel(p)</td><td>critical→🔴 Critical, high→🟠 High</td></tr>
+        </table><div class="nsize">1.2 KB</div></div>
+</div>
+
+<div class="stitle">⚡ JS Services</div>
+<div class="ngrid">
+    <div class="ncard svc"><div class="nname">db.js <span class="ntype t-svc">IndexedDB</span></div>
+        <div class="ndesc">Promise-based CRUD wrapper. RemindMeProDB with tasks store + 4 indexes.</div>
+        <table class="ft"><tr><th>Export</th><th>Description</th></tr>
+            <tr><td>openDB()</td><td>Open/create DB; tasks store with dueDate, priority, category, status indexes</td></tr>
+            <tr><td>addTask(task)</td><td>Insert via readwrite → .add()</td></tr>
+            <tr><td>getAllTasks()</td><td>Fetch all via readonly → .getAll()</td></tr>
+            <tr><td>updateTask(task)</td><td>Upsert via readwrite → .put()</td></tr>
+            <tr><td>deleteTask(id)</td><td>Remove via readwrite → .delete()</td></tr>
+        </table><div class="nsize">1.5 KB</div></div>
+
+    <div class="ncard svc upd"><div class="nname">notifications.js <span class="ntype t-svc">Engine</span> <span class="t-upd">🔔 FIXED</span></div>
+        <div class="ndesc">Multi-fire notification engine. v1.2 FIX: Reminders now fire BEFORE due date. Last reminder fires AT due time. Past reminders (&gt;1min) skipped on reload.</div>
+        <table class="ft"><tr><th>Export</th><th>Description</th></tr>
+            <tr><td>requestPermission()</td><td>Calls Notification.requestPermission()</td></tr>
+            <tr class="nr"><td>showNotification(t,n,total)</td><td><span class="fn-u">UPD:</span> Accepts total count; last shows "— DUE NOW!"</td></tr>
+            <tr class="nr"><td>scheduleMultiFire(task)</td><td><span class="fn-u">FIXED:</span> firstFireTime = dueDate - (count-1)×interval. Normal: N timeouts before due. UntilDone: fire at due then repeat. Skips &gt;1min past. Logs schedule.</td></tr>
+            <tr><td>cancelReminders(id)</td><td>Clear all setTimeout handles from activeTimers Map</td></tr>
+            <tr><td>acknowledgeTask(id)</td><td>Set ack flag + cancel timers</td></tr>
+            <tr><td>snoozeTask(t, ms)</td><td>Cancel → new dueDate → re-schedule; return updated</td></tr>
+        </table><div class="nsize">6.4 KB (was 1.7 KB)</div></div>
+
+    <div class="ncard svc upd"><div class="nname">theme.js <span class="ntype t-svc">Theme</span> <span class="t-upd">🌙 UPD</span></div>
+        <div class="ndesc">Dark/light mode manager. v1.1: Default changed from 'light' to 'dark'.</div>
+        <table class="ft"><tr><th>Export</th><th>Description</th></tr>
+            <tr class="nr"><td>getTheme()</td><td><span class="fn-u">UPD:</span> Default now 'dark' (was 'light')</td></tr>
+            <tr><td>setTheme(t)</td><td>Write localStorage + set data-theme attribute</td></tr>
+            <tr><td>toggleTheme()</td><td>Flip dark↔light; return new value</td></tr>
+            <tr><td>initTheme()</td><td>Apply on load + listen for system prefers-color-scheme</td></tr>
+        </table><div class="nsize">1.0 KB</div></div>
+
+    <div class="ncard svc"><div class="nname">backup.js <span class="ntype t-svc">Backup</span></div>
+        <div class="ndesc">Import/export system. JSON + CSV export, JSON import (merge/replace), auto-backup to localStorage (last 3).</div>
+        <table class="ft"><tr><th>Export</th><th>Description</th></tr>
+            <tr><td>exportAsJSON()</td><td>All tasks → JSON blob → file download</td></tr>
+            <tr><td>exportAsCSV()</td><td>All tasks → 14-col CSV → file download</td></tr>
+            <tr><td>importFromJSON(file)</td><td>FileReader → parse → validate → return data</td></tr>
+            <tr><td>restoreFromBackup(d,m)</td><td>merge: skip dupes | replace: del all + import</td></tr>
+            <tr><td>autoBackup()</td><td>Save to localStorage (rolling 3 snapshots)</td></tr>
+            <tr><td>startAutoBackup()</td><td>setInterval(30 min) + immediate backup</td></tr>
+            <tr><td>+ 6 more</td><td>getAutoBackups, restoreAutoBackup, isAutoBackupEnabled, setAutoBackupEnabled, stopAutoBackup</td></tr>
+        </table><div class="nsize">5.8 KB · 12 exports</div></div>
+</div>
+
+<div class="stitle">📄 JS Pages</div>
+<div class="ngrid">
+    <div class="ncard page upd"><div class="nname">home.js <span class="ntype t-page">Task List</span> <span class="t-upd">⏳✏️ UPD</span></div>
+        <div class="ndesc">Main view: stats, date-grouped tasks, action buttons. New: Live countdown timer + Edit button on every card.</div>
+        <table class="ft"><tr><th>Feature</th><th>Description</th></tr>
+            <tr class="nr"><td>⏳ Countdown</td><td>setInterval(1s) per badge: "⏳ 2h 15m 33s" → urgent ≤5min (red pulse) → "⚠️ OVERDUE"</td></tr>
+            <tr class="nr"><td>✏️ Edit btn</td><td>Dispatches CustomEvent('edit-task') → app.js pre-fills dialog</td></tr>
+            <tr><td>✅ Complete</td><td>updateTask → acknowledgeTask → re-render</td></tr>
+            <tr><td>💤 Snooze</td><td>snoozeCount++ → new dueDate → re-render</td></tr>
+            <tr><td>🗑️ Delete</td><td>Confirm → deleteTask → cancelReminders</td></tr>
+        </table><div class="nsize">10.3 KB · Internal: countdownInterval</div></div>
+
+    <div class="ncard page"><div class="nname">categories.js <span class="ntype t-page">Grid</span></div>
+        <div class="ndesc">2×3 category grid with counts. Click to filter tasks below.</div><div class="nsize">1.9 KB</div></div>
+    <div class="ncard page"><div class="nname">calendar.js <span class="ntype t-page">Calendar</span></div>
+        <div class="ndesc">Monthly 7-col grid. Today highlight, task dots, prev/next nav, day-click detail.</div><div class="nsize">2.8 KB · Internal: cM, cY</div></div>
+
+    <div class="ncard page upd"><div class="nname">settings.js <span class="ntype t-page">Settings</span> <span class="t-upd">🔇 UPD</span></div>
+        <div class="ndesc">6 sections. New: "Disable All Notifications" toggle — cancels all timers, greys out perm row, sets localStorage flag.</div>
+        <table class="ft"><tr><th>Feature</th><th>Description</th></tr>
+            <tr class="nr"><td>🔇 Disable toggle</td><td>cancelReminders() for ALL tasks; localStorage flag; grey out browser perm</td></tr>
+            <tr><td>🎨 Dark mode</td><td>Toggle → setTheme()</td></tr>
+            <tr><td>💾 Backup</td><td>Export JSON/CSV, Import, Auto-backup, history</td></tr>
+            <tr><td>🗑️ Data</td><td>Clear completed, Delete all (auto-backup first)</td></tr>
+        </table><div class="nsize">11.0 KB · 5 module imports (most of any page)</div></div>
+</div>
+
+<div class="stitle">🚀 Main Entry</div>
+<div class="ngrid">
+    <div class="ncard main upd" style="grid-column:1/-1"><div class="nname">app.js <span class="ntype t-main">Orchestrator</span> <span class="t-upd">✏️🔇 UPD</span></div>
+        <div class="ndesc">Main entry. Imports ALL modules. New: Edit task (reuses dialog) + notification disable checks throughout.</div>
+        <table class="ft"><tr><th>Function</th><th>Description</th></tr>
+            <tr><td>navigateTo(page)</td><td>Set active nav + call page render</td></tr>
+            <tr class="nr"><td>isNotificationsDisabled()</td><td><span class="fn-u">NEW:</span> Reads localStorage disable flag</td></tr>
+            <tr class="nr"><td>setupTaskForm()</td><td><span class="fn-u">UPD:</span> CREATE + EDIT modes. Listens 'edit-task' → pre-fill → updateTask(). Checks notif disabled.</td></tr>
+            <tr><td>setupNav()</td><td>Wire 4 nav buttons</td></tr>
+            <tr class="nr"><td>scheduleExisting()</td><td><span class="fn-u">UPD:</span> Skips if notifications disabled</td></tr>
+            <tr class="nr"><td>setupReminders()</td><td><span class="fn-u">UPD:</span> Ignores reminder-fired if disabled</td></tr>
+            <tr><td>registerSW()</td><td>Register /sw.js</td></tr>
+            <tr><td>setupSW()</td><td>Handle SW messages: TASK_DONE / TASK_SNOOZE</td></tr>
+            <tr class="nr"><td>init()</td><td><span class="fn-u">UPD:</span> Skips requestPermission() if disabled</td></tr>
+        </table><div class="nsize">11.8 KB · 6 module imports · Internal: editingTaskId</div></div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: DEPENDENCIES -->
+<!-- ============================================================ -->
+<div id="deps" class="tab-content">
+<div class="stitle">🔗 Import Dependency Tree</div>
+<div class="dtree"><span class="df">js/app.js</span> <span style="color:#94a3b8">(ORCHESTRATOR — imports everything)</span>
+│
+├──▶ <span class="dm">js/utils/state.js</span> ─────── <span class="dfn">store</span>
+├──▶ <span class="dm">js/utils/helpers.js</span> ───── <span class="dfn">generateId</span>, <span class="dfn">showToast</span>
+│
+├──▶ <span class="dm">js/services/theme.js</span> ──── <span class="dfn">initTheme</span>
+├──▶ <span class="dm">js/services/db.js</span> ──────── <span class="dfn">openDB</span>, <span class="dfn">addTask</span>, <span class="dfn">getAllTasks</span>, <span class="dfn">updateTask</span>
+├──▶ <span class="dm">js/services/notifications.js</span> ── <span class="dfn">requestPermission</span>, <span class="dfn">scheduleMultiFire</span>,
+│                                     <span class="dfn">snoozeTask</span>, <span class="dfn">acknowledgeTask</span>
+├──▶ <span class="dm">js/services/backup.js</span> ──── <span class="dfn">startAutoBackup</span>, <span class="dfn">isAutoBackupEnabled</span>, <span class="dfn">autoBackup</span>
+│
+├──▶ <span class="df">js/pages/home.js</span>
+│    ├──▶ <span class="dm">db.js</span> ──────── <span class="dfn">getAllTasks</span>, <span class="dfn">updateTask</span>, <span class="dfn">deleteTask</span>
+│    ├──▶ <span class="dm">notifications.js</span> ── <span class="dfn">acknowledgeTask</span>, <span class="dfn">cancelReminders</span>
+│    └──▶ <span class="dm">helpers.js</span> ── <span class="dfn">formatDateShort</span>, <span class="dfn">getDateLabel</span>, <span class="dfn">showToast</span>, <span class="dfn">getCategoryIcon</span>
+│    <span class="dn">✏️ dispatches CustomEvent('edit-task') → caught by app.js</span>
+│
+├──▶ <span class="df">js/pages/categories.js</span>
+│    ├──▶ <span class="dm">db.js</span> ──── <span class="dfn">getAllTasks</span>
+│    └──▶ <span class="dm">helpers.js</span> ── <span class="dfn">getCategoryIcon</span>
+│
+├──▶ <span class="df">js/pages/calendar.js</span>
+│    └──▶ <span class="dm">db.js</span> ──── <span class="dfn">getAllTasks</span>
+│
+└──▶ <span class="df">js/pages/settings.js</span>
+     ├──▶ <span class="dm">theme.js</span> ─── <span class="dfn">getTheme</span>, <span class="dfn">setTheme</span>
+     ├──▶ <span class="dm">db.js</span> ──────── <span class="dfn">getAllTasks</span>, <span class="dfn">deleteTask</span>
+     ├──▶ <span class="dm">notifications.js</span> ── <span class="dfn">requestPermission</span>, <span class="dn">cancelReminders ← NEW</span>
+     ├──▶ <span class="dm">backup.js</span> ── <span class="dfn">ALL 12 exports</span>
+     └──▶ <span class="dm">helpers.js</span> ── <span class="dfn">showToast</span>
+
+<span class="df">services/backup.js</span>
+└──▶ <span class="dm">db.js</span> ──── <span class="dfn">getAllTasks</span>, <span class="dfn">addTask</span>, <span class="dfn">deleteTask</span>
+
+<span style="color:#94a3b8">Leaf modules (zero imports): state.js, helpers.js, db.js, notifications.js, theme.js</span></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: DATA FLOWS -->
+<!-- ============================================================ -->
+<div id="flows" class="tab-content">
+<div class="stitle">🔄 Core Data Flows</div>
+
+<div class="fcard ff"><h3>🔔 FIXED v1.2: Multi-Fire Notification Timing</h3><pre>
+scheduleMultiFire(task)  ← caller checks isNotificationsDisabled() first
+       │
+       ├── remindUntilDone === true ──→ UNTIL-DONE MODE
+       │     Wait until dueDate → fire → repeat every interval until ack
+       │
+       └── remindUntilDone === false ──→ NORMAL MODE (FIXED)
+             │
+             ▼
+           firstFireTime = dueDate - (count-1) × intervalMs
+             │
+             ▼  Example: Due 3:00 PM, 5 reminders × 15 min
+                firstFireTime = 3:00 - (4 × 15min) = 2:00 PM
+             │
+             ▼
+           for i = 0 → count:
+             fireTime = firstFireTime + (i × intervalMs)
+             delay = fireTime - now
+               ├── delay &lt; -60s → SKIP (past, don't spam)
+               └── delay ≥ 0   → setTimeout → check ack → notify
+             │
+             ▼
+           BEFORE FIX: 3:00→3:15→3:30→3:45→4:00 ← all AFTER ❌
+           AFTER FIX:  2:00→2:15→2:30→2:45→3:00 ← last AT due ✅
+</pre></div>
+
+<div class="fcard nf"><h3>✏️ NEW v1.1: Edit Task Flow</h3><pre>
+User taps [✏️ Edit] on task card
+       │
+       ▼
+home.js → CustomEvent('edit-task', { detail: task })
+       │
+       ▼
+app.js → editingTaskId = task.id
+         dialogTitle = "✏️ Edit Reminder"
+         Pre-fill ALL form fields
+       │
+       ▼
+dialog.showModal() → user modifies → submit
+       │
+       ▼
+editingTaskId !== null → EDIT MODE
+  → { ...existingTask, ...formData }
+  → updateTask(merged) → IndexedDB.put()
+  → scheduleMultiFire(updated) if notifs enabled
+  → dialog.close() → showToast("✏️ Updated!")
+</pre></div>
+
+<div class="fcard nf"><h3>⏳ NEW v1.1: Countdown Timer Flow</h3><pre>
+renderHome() → clear previous interval → render badges
+       │
+       ▼
+setInterval(updateCountdowns, 1000)  ← every second
+       │
+       ▼
+Each tick, for each [data-countdown-target] badge:
+  diff = target - Date.now()
+  ├── diff ≤ 0    → "⚠️ OVERDUE"    + .countdown-overdue
+  ├── diff &gt; 24h  → "⏳ 3d 5h 20m"  (calm purple)
+  ├── diff &gt; 1h   → "⏳ 5h 30m 15s" (calm purple)
+  ├── diff ≤ 5min → "⏳ 4m 22s"     + .countdown-urgent (red pulse)
+  └── diff &lt; 1min → "⏳ 45s"        + .countdown-urgent (red pulse)
+</pre></div>
+
+<div class="fcard nf"><h3>🔇 NEW v1.1: Disable Notifications Flow</h3><pre>
+Toggle ON in Settings
+  → localStorage('remindme-notifications-disabled') = 'true'
+  → cancelReminders() for ALL tasks
+  → Grey out browser permission row
+
+Effects across codebase:
+  • init()           → skip requestPermission()
+  • scheduleExisting → skip entirely
+  • create/edit task → skip scheduleMultiFire()
+  • reminder-fired   → ignored (no toasts)
+
+Toggle OFF → "restart app to reschedule"
+</pre></div>
+
+<div class="fcard"><h3>Task Creation Flow (with notif check)</h3><pre>
+FAB → dialog (CREATE) → fill → submit → validate
+  → generateId() → addTask() → IndexedDB
+  → isNotificationsDisabled()? YES: skip | NO: scheduleMultiFire()
+  → dialog.close() → toast → navigateTo('home')
+</pre></div>
+
+<div class="fcard"><h3>🌙 Dark Default + Backup/Restore (unchanged logic)</h3><pre>
+Theme: getTheme() → no saved → returns 'dark' (was 'light')
+       index.html has data-theme="dark" → no flash
+
+Backup: Export → getAllTasks → JSON/CSV blob → download
+        Import → FileReader → parse → merge|replace → refresh
+        Auto   → setInterval(30 min) → localStorage (last 3)
+</pre></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5: STORAGE & EVENTS -->
+<!-- ============================================================ -->
+<div id="storage" class="tab-content">
+<div class="stitle">🗄️ Storage Map (7 keys)</div>
+<table class="itable">
+    <tr><th>Storage</th><th>Key</th><th>Data</th><th>Read By</th><th>Written By</th></tr>
+    <tr><td>IndexedDB</td><td><code>RemindMeProDB → tasks</code></td><td>All task objects (14 fields)</td><td>db.js → all pages</td><td>db.js</td></tr>
+    <tr><td>localStorage</td><td><code>remindme-theme</code></td><td>"dark" (default) / "light"</td><td>theme.js</td><td>theme.js</td></tr>
+    <tr><td>localStorage</td><td><code>task-ack-{taskId}</code></td><td>"true" when acknowledged</td><td>notifications.js</td><td>notifications.js</td></tr>
+    <tr><td>localStorage</td><td><code>remindme-auto-backups</code></td><td>JSON array (last 3)</td><td>backup.js</td><td>backup.js</td></tr>
+    <tr><td>localStorage</td><td><code>remindme-auto-backup-enabled</code></td><td>"true" / "false"</td><td>backup.js</td><td>backup.js</td></tr>
+    <tr class="nr"><td>localStorage</td><td><code>remindme-notifications-disabled</code></td><td>"true" / "false" <span class="fn-u">NEW</span></td><td>app.js, settings.js</td><td>settings.js</td></tr>
+    <tr><td>Cache API</td><td><code>remindme-v1</code></td><td>Cached assets</td><td>sw.js</td><td>sw.js</td></tr>
+</table>
+
+<div class="stitle">📡 Event System (17 events)</div>
+<table class="itable">
+    <tr><th>Event</th><th>Source</th><th>Listener</th><th>Action</th><th>Ver</th></tr>
+    <tr><td><code>click</code> .nav-btn</td><td>User</td><td>app.js</td><td>navigateTo(page)</td><td>v1.0</td></tr>
+    <tr><td><code>click</code> #fab</td><td>User</td><td>app.js</td><td>Open dialog (CREATE)</td><td>v1.0</td></tr>
+    <tr class="nr"><td><code>edit-task</code></td><td>home.js</td><td>app.js</td><td>Open dialog (EDIT) <span class="fn-u">NEW</span></td><td>v1.1</td></tr>
+    <tr><td><code>submit</code> #task-form</td><td>User</td><td>app.js</td><td>Create OR Update</td><td>v1.1</td></tr>
+    <tr><td><code>click</code> .complete-btn</td><td>User</td><td>home.js</td><td>Mark done</td><td>v1.0</td></tr>
+    <tr><td><code>click</code> .snooze-btn</td><td>User</td><td>home.js</td><td>Snooze 15 min</td><td>v1.0</td></tr>
+    <tr class="nr"><td><code>click</code> .edit-btn</td><td>User</td><td>home.js</td><td>Dispatch edit-task <span class="fn-u">NEW</span></td><td>v1.1</td></tr>
+    <tr><td><code>click</code> .delete-btn</td><td>User</td><td>home.js</td><td>Confirm → delete</td><td>v1.0</td></tr>
+    <tr><td><code>click</code> .category-card</td><td>User</td><td>categories</td><td>Filter by category</td><td>v1.0</td></tr>
+    <tr><td><code>click</code> .calendar-day</td><td>User</td><td>calendar</td><td>Show day's tasks</td><td>v1.0</td></tr>
+    <tr><td><code>change</code> #theme-toggle</td><td>User</td><td>settings</td><td>Toggle dark/light</td><td>v1.0</td></tr>
+    <tr class="nr"><td><code>change</code> #notif-disable</td><td>User</td><td>settings</td><td>Disable all notifs <span class="fn-u">NEW</span></td><td>v1.1</td></tr>
+    <tr><td><code>change</code> #import-file</td><td>User</td><td>settings</td><td>Import backup</td><td>v1.0</td></tr>
+    <tr><td><code>reminder-fired</code></td><td>notifs.js</td><td>app.js</td><td>Toast (skip if 🔇)</td><td>v1.1</td></tr>
+    <tr><td><code>message</code> from SW</td><td>sw.js</td><td>app.js</td><td>TASK_DONE / SNOOZE</td><td>v1.0</td></tr>
+    <tr><td><code>beforeunload</code></td><td>Browser</td><td>app.js</td><td>Auto-backup</td><td>v1.0</td></tr>
+    <tr><td><code>online</code>/<code>offline</code></td><td>Browser</td><td>app.js</td><td>Connectivity toast</td><td>v1.0</td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 6: METRICS -->
+<!-- ============================================================ -->
+<div id="metrics" class="tab-content">
+<div class="stitle">📊 Complexity &amp; Size</div>
+<table class="itable">
+    <tr><th>File</th><th>Size</th><th>Exports</th><th>Complexity</th><th>Changes</th></tr>
+    <tr class="nr"><td><code>app.js</code></td><td>11.8 KB</td><td>0 (entry)</td><td><span class="bar bh" style="width:90px"></span> High</td><td>✏️🔇</td></tr>
+    <tr class="nr"><td><code>settings.js</code></td><td>11.0 KB</td><td>1</td><td><span class="bar bh" style="width:85px"></span> High</td><td>🔇</td></tr>
+    <tr class="nr"><td><code>home.js</code></td><td>10.3 KB</td><td>1</td><td><span class="bar bh" style="width:80px"></span> High</td><td>⏳✏️</td></tr>
+    <tr class="nr"><td><code>components.css</code></td><td>7.8 KB</td><td>—</td><td><span class="bar bm" style="width:60px"></span> Med</td><td>⏳</td></tr>
+    <tr class="nr"><td><code>notifications.js</code></td><td>6.4 KB</td><td>6</td><td><span class="bar bm" style="width:55px"></span> Med</td><td>🔔 Fix</td></tr>
+    <tr><td><code>backup.js</code></td><td>5.8 KB</td><td>12</td><td><span class="bar bm" style="width:50px"></span> Med</td><td>—</td></tr>
+    <tr class="nr"><td><code>index.html</code></td><td>4.7 KB</td><td>—</td><td><span class="bar bl" style="width:30px"></span> Low</td><td>🌙</td></tr>
+    <tr><td><code>calendar.js</code></td><td>2.8 KB</td><td>1</td><td><span class="bar bl" style="width:25px"></span> Low</td><td>—</td></tr>
+    <tr><td><code>categories.js</code></td><td>1.9 KB</td><td>1</td><td><span class="bar bl" style="width:20px"></span> Low</td><td>—</td></tr>
+    <tr><td><code>db.js</code></td><td>1.5 KB</td><td>5</td><td><span class="bar bl" style="width:20px"></span> Low</td><td>—</td></tr>
+    <tr class="nr"><td><code>theme.js</code></td><td>1.0 KB</td><td>4</td><td><span class="bar bl" style="width:15px"></span> Low</td><td>🌙</td></tr>
+    <tr><td colspan="5" style="color:#94a3b8;font-size:11px">+ helpers.js (1.2KB), base.css (1.1KB), layout.css (1.0KB), animations.css (0.8KB), state.js (0.5KB), sw.js (1.3KB), manifest (0.4KB), README (0.5KB)</td></tr>
+</table>
+
+<div class="stitle">📈 Summary</div>
+<div class="sgrid">
+    <div class="scard"><div class="snum">22</div><div class="slab">Total Files</div></div>
+    <div class="scard"><div class="snum" style="color:#00C9A7">~58 KB</div><div class="slab">Total Size</div></div>
+    <div class="scard"><div class="snum" style="color:#FFB347">0</div><div class="slab">Dependencies</div></div>
+    <div class="scard"><div class="snum" style="color:#D30E8C">48</div><div class="slab">Exports</div></div>
+    <div class="scard"><div class="snum">17</div><div class="slab">Event Types</div></div>
+    <div class="scard"><div class="snum" style="color:#FF6584">7</div><div class="slab">Files Changed</div></div>
+</div>
+</div>
+
+</div><!-- end container -->
+
+<div style="text-align:center;padding:40px 0;color:#94a3b8;font-size:12px;border-top:1px solid #475569;margin-top:40px">
+    RemindMe Pro v1.2 · Knowledge Graph · May 31, 2026 · Ashish Moghe
+</div>
+
+<script>
+function showTab(id){
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

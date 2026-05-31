@@ -1,0 +1,6 @@
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeIn 0.3s ease forwards}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}dialog[open]{animation:slideUp 0.3s ease forwards}
+@keyframes checkmark{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}.task-complete-anim{animation:checkmark 0.4s ease forwards}
+@keyframes swipeOut{to{transform:translateX(-100%);opacity:0;height:0;padding:0;margin:0}}.swipe-out{animation:swipeOut 0.3s ease forwards}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}.pulse{animation:pulse 2s infinite}
+.stagger-1{animation-delay:.05s}.stagger-2{animation-delay:.1s}.stagger-3{animation-delay:.15s}.stagger-4{animation-delay:.2s}
