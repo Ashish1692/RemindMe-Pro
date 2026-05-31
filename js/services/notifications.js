@@ -24,7 +24,12 @@ export const showNotification = (task, currentCount, totalCount) => {
         const body = task.remindUntilDone
             ? `Reminder ${currentCount} (until done)${task.description ? ': ' + task.description : ''}`
             : `Reminder ${currentCount} of ${totalCount}${isLast ? ' — DUE NOW!' : ''}${task.description ? ': ' + task.description : ''}`;
-
+        
+        // 1. Play custom sound
+        const sound = new Audio('/assets/sounds/reminder.mp3');
+        sound.volume = 1;
+        sound.play().catch(() => { }); // catch if user hasn't interacted yet
+        
         const n = new Notification(task.title, {
             body,
             icon: '/assets/icons/icon-192.png',
