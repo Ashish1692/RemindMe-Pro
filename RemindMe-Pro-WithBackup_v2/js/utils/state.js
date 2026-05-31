@@ -1,3 +1,0 @@
-const createStore=(s)=>{const l=new Set();const state=new Proxy(s,{set(t,k,v){const o=t[k];t[k]=v;if(o!==v)l.forEach(f=>f(k,v,o));return true}});return{state,subscribe:(f)=>{l.add(f);return()=>l.delete(f)},getState:()=>({...state})}};
-export const store=createStore({tasks:[],categories:['general','work','personal','health','study','finance'],currentPage:'home',theme:localStorage.getItem('remindme-theme')||'light',isOnline:navigator.onLine});
-export default store;

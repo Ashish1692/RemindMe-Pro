@@ -1,7 +1,0 @@
-export const generateId=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
-export const formatDate=(d)=>new Intl.DateTimeFormat('en-IN',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(d));
-export const formatDateShort=(d)=>new Intl.DateTimeFormat('en-IN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(d));
-export const getDateLabel=(ds)=>{const t=new Date();t.setHours(0,0,0,0);const d=new Date(ds);d.setHours(0,0,0,0);const diff=Math.floor((d-t)/86400000);if(diff<0)return'Overdue';if(diff===0)return'Today';if(diff===1)return'Tomorrow';if(diff<7)return'This Week';return'Upcoming'};
-export const showToast=(msg,dur=3000)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');t.classList.add('visible');setTimeout(()=>{t.classList.remove('visible');t.classList.add('hidden')},dur)};
-export const getCategoryIcon=(c)=>({general:'📌',work:'💼',personal:'🏠',health:'💊',study:'📚',finance:'💰'}[c]||'📌');
-export const getPriorityLabel=(p)=>({low:'🟢 Low',medium:'🟡 Medium',high:'🟠 High',critical:'🔴 Critical'}[p]||p);
