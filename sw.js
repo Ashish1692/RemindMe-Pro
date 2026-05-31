@@ -35,7 +35,7 @@ self.addEventListener("push", (e) => {
 	e.waitUntil(
 		self.registration.showNotification(d.title || "RemindMe Pro", {
 			body: d.body || "Reminder!",
-			icon: "./assets/icons/icons8-alarm-96.png",
+			icon: "/assets/icons/icons8-alarm-96.png",
 			tag: d.tag || "r",
 			data: d,
 			actions: [
